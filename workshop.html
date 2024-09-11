@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokémon Fetch</title>
+  </head>
+  <body>
+    <!-- Pokémon search form -->
+    <form id="pokemon-search-form">
+      <label for="pokemon-name">Pokémon name</label>
+      <input id="pokemon-name" name="pokemon" type="search" required />
+      <button type="submit">Search</button>
+    </form>
+
+   
+    <output id="pokemon-result"></output>
+
+    <script>
+      const form = document.querySelector("#pokemon-search-form");
+      const output = document.querySelector("#pokemon-result");
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault(); // Prevent form submission
+
+        output.textContent = ""; // Clear previous result
+
+        const name = new FormData(form).get("pokemon").trim().toLowerCase(); // Get Pokémon name
+
+        if (!name) {
+          output.textContent = "⚠️ Please enter a Pokémon name."; 
+          return;
+        }
+
+        fetch(`https://pokeapi.co/api/v2/pokemon/${name}`)
+          .then((response) => {
+            if (!response.ok) throw new Error("404"); 
+            return response.json();
+          })
+          .then((data) => {
+            // Display Pokémon info
+            const pokemonInfo = `
+              ${data.name.toUpperCase()}
+              Height: ${data.height}
+              Weight: ${data.weight}
+              Type: ${data.types.map((type) => type.type.name).join(", ")}
+            `;
+
+            const img = document.createElement("img");
+            img.src = data.sprites.front_default;
+            img.alt = data.name;
+
+            output.textContent = pokemonInfo; 
+            output.appendChild(img); 
+          })
+          .catch(() => {
+            output.textContent = `⚠️ Couldn't find "${name}".`; 
+          });
+      });
+    </script>
+  </body>
+</html>
